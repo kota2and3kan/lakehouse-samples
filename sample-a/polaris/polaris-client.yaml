@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: polaris-client
+spec:
+  containers:
+    - name: polaris-client
+      image: curlimages/curl:8.20.0
+      command: ["sleep", "inf"]
+      env:
+        - name: CLIENT_ID
+          value: "polaris-root-id"
+        - name: CLIENT_SECRET
+          value: "polaris-root-secret"
+  terminationGracePeriodSeconds: 0

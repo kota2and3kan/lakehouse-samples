@@ -1,0 +1,48 @@
+global:
+  seaweedfs:
+    enableSecurity: false
+    enableReplication: false
+
+allInOne:
+  enabled: true
+  replicas: 1
+  extraArgs: ["-master.peers=none"]
+  s3:
+    enabled: true
+    enableAuth: true
+    existingConfigSecret: "seaweedfs-s3-user"
+  data:
+    type: "emptyDir"
+  service:
+    type: ClusterIP
+master:
+  enabled: false
+volume:
+  enabled: false
+filer:
+  enabled: false
+s3:
+  enabled: false
+admin:
+  enabled: true
+  replicas: 1
+  masters: "seaweedfs-all-in-one:9333"
+  secret:
+    adminUser: "admin"
+    adminPassword: "admin"
+  data:
+    type: "emptyDir"
+  logs:
+    type: "emptyDir"
+  service:
+    type: ClusterIP
+worker:
+  enabled: true
+  replicas: 1
+  jobType: "default"
+  data:
+    type: "emptyDir"
+  logs:
+    type: "emptyDir"
+cosi:
+  enabled: false
