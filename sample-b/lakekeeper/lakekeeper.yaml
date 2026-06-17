@@ -1,0 +1,6 @@
+authz:
+  backend: "allowall"
+
+postgresql:
+  storage:
+    requestedSize: null

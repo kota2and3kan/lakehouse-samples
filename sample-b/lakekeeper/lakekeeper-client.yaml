@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lakekeeper-client
+spec:
+  containers:
+    - name: lakekeeper-client
+      image: curlimages/curl:8.20.0
+      command: ["sleep", "inf"]
+  terminationGracePeriodSeconds: 0
+  restartPolicy: Never

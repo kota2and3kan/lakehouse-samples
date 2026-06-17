@@ -1,10 +1,10 @@
-# Sample A
+# Sample B
 
 Create a Lakehouse on Kubernetes with:
 
 - Apache Iceberg as a table format.
 - Apache SeaweedFS as object storage.
-- Apache Polaris as a catalog for Apache Iceberg.
+- Lakekeeper as a catalog for Apache Iceberg.
 - DuckDB and Spark SQL as query engines.
 
 ## Overview
@@ -15,7 +15,7 @@ In this sample, you will create the following Lakehouse:
 +--[Kubernetes]---------------------------------------------------+
 |                                                                 |
 |  +----------------+                         +----------------+  |
-|  | DuckDB         |---(Iceberg REST API)--->| Apache Polaris |  |
+|  | DuckDB         |---(Iceberg REST API)--->| Lakekeeper     |  |
 |  | (Query Engine) |<---(Get Catalog Info)---| (REST Catalog) |  |
 |  +-------+--------+                         +----------------+  |
 |          |                                                      |
@@ -45,7 +45,7 @@ In this sample, you will create the following Lakehouse:
 1. Create a Kubernetes namespace.
 
     ```shell
-    kubectl create ns sample-a
+    kubectl create ns sample-b
     ```
 
 ### Deploy Apache SeaweedFS (Object Storage)
@@ -63,70 +63,61 @@ In this sample, you will create the following Lakehouse:
 1. Create a secret that includes SeaweedFS user information.
 
     ```shell
-    kubectl create secret generic seaweedfs-s3-user --from-file=seaweedfs_s3_config=./seaweedfs/seaweedfs-s3-user.json -n sample-a
+    kubectl create secret generic seaweedfs-s3-user --from-file=seaweedfs_s3_config=./seaweedfs/seaweedfs-s3-user.json -n sample-b
     ```
 
 1. Deploy SeaweedFS.
 
     ```shell
-    helm install seaweedfs seaweedfs/seaweedfs -f ./seaweedfs/seaweedfs.yaml -n sample-a --version 4.33.0
+    helm install seaweedfs seaweedfs/seaweedfs -f ./seaweedfs/seaweedfs.yaml -n sample-b --version 4.33.0
     ```
 
-1. [Optional] You can access the Web UI (Admin Console) of SeaweedFS through `127.0.0.1` by using the `kubectl port-forward` command.
+1. [Optional] You can access Web UI (Admin Console) of SeaweedFS through `127.0.0.1` by using the `kubectl port-forward` command.
 
     ```shell
-    kubectl port-forward svc/seaweedfs-admin 23646:23646 -n sample-a
+    kubectl port-forward svc/seaweedfs-admin 23646:23646 -n sample-b
     ```
 
     > Note: The values of `username` / `password` are `admin` / `admin`.
 
-### Deploy Apache Polaris (REST Catalog)
+### Deploy Lakekeeper (REST Catalog)
 
 1. Add a Helm repository.
 
     ```shell
-    helm repo add polaris https://downloads.apache.org/polaris/helm-chart
+    helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
     ```
 
     ```shell
-    helm repo update polaris
+    helm repo update lakekeeper
     ```
 
-1. Create a secret that includes root user credentials for Polaris.
+1. Deploy Lakekeeper.
 
     ```shell
-    kubectl create secret generic polaris-root-credentials \
-      --from-literal=credentials="POLARIS,polaris-root-id,polaris-root-secret" \
-      -n sample-a
+    helm install lakekeeper lakekeeper/lakekeeper -f ./lakekeeper/lakekeeper.yaml -n sample-b --version 0.11.0
     ```
 
-1. Create a secret that includes credentials to access SeaweedFS.
+1. Deploy a client pod for Lakekeeper.
 
     ```shell
-    kubectl create secret generic polaris-s3-credentials \
-      --from-literal=access_key_id=polaris-s3-access-key \
-      --from-literal=secret_access_key=polaris-s3-secret-access-key \
-      -n sample-a
+    kubectl apply -f ./lakekeeper/lakekeeper-client.yaml -n sample-b
     ```
 
-1. Deploy Polaris.
+1. [Optional] You can access Web UI (Admin Console) of Lakekeeper through `127.0.0.1` by using the `kubectl port-forward` command.
 
     ```shell
-    helm install polaris polaris/polaris -f ./polaris/polaris.yaml -n sample-a --version 1.5.0
+    kubectl port-forward svc/lakekeeper 8181:8181 -n sample-b
     ```
 
-1. Deploy a client pod for Polaris.
-
-    ```shell
-    kubectl apply -f ./polaris/polaris-client.yaml -n sample-a
-    ```
+    > Note: In this sample, there is no authentication to access Lakekeeper.
 
 ### Deploy DuckDB CLI (Query Engine)
 
 1. Deploy DuckDB CLI as a pod.
 
     ```shell
-    kubectl apply -f ./duckdb/duckdb.yaml -n sample-a
+    kubectl apply -f ./duckdb/duckdb.yaml -n sample-b
     ```
 
 ## Create Iceberg Tables (TPC-H)
@@ -136,63 +127,65 @@ In this sample, you will create the following Lakehouse:
 1. Create a bucket.
 
     ```shell
-    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n sample-a) -n sample-a --  \
-      sh -c 'echo "s3.bucket.create -name sample-bucket -owner polaris-s3-user" | weed shell -master=localhost:9333'
+    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n sample-b) -n sample-b --  \
+      sh -c 'echo "s3.bucket.create -name sample-bucket -owner lakekeeper-s3-user" | weed shell -master=localhost:9333'
     ```
 
-### Create a catalog in Polaris
+### Create a catalog in Lakekeeper
 
-1. Run a shell in the Polaris client pod.
+1. Run a shell in the Lakekeeper client pod.
 
     ```shell
-    kubectl exec -it polaris-client -n sample-a -- /bin/sh
+    kubectl exec -it lakekeeper-client -n sample-b -- /bin/sh
     ```
 
-1. Get an access token for Polaris.
+1. Bootstrap Lakekeeper.
 
     ```shell
-    POLARIS_ACCESS_TOKEN=$(curl -s http://polaris.sample-a.svc.cluster.local:8181/api/catalog/v1/oauth/tokens \
-      -d 'grant_type=client_credentials' \
-      -d "client_id=${CLIENT_ID}" \
-      -d "client_secret=${CLIENT_SECRET}" \
-      -d 'scope=PRINCIPAL_ROLE:ALL' \
-      | grep -o '"access_token":"[^"]*"' \
-      | sed 's/"access_token":"\(.*\)"/\1/')
+    curl -X POST http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/bootstrap \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer dummy" \
+      -d '{"accept-terms-of-use": true}'
     ```
 
 1. Create a catalog.
 
     ```shell
-    curl -X POST http://polaris.sample-a.svc.cluster.local:8181/api/management/v1/catalogs \
-      -H "Authorization: Bearer ${POLARIS_ACCESS_TOKEN}" \
+    curl -X POST http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/warehouse \
       -H "Content-Type: application/json" \
+      -H "Authorization: Bearer dummy" \
       -d '{
-          "catalog": {
-            "type": "INTERNAL",
-            "name": "sample_catalog",
-            "properties": {
-              "default-base-location": "s3://sample-bucket/"
-            },
-            "storageConfigInfo": {
-              "storageType": "S3",
-              "allowedLocations": ["s3://sample-bucket/"],
-              "endpoint": "http://seaweedfs-all-in-one.sample-a.svc.cluster.local:8333",
-              "endpointInternal": "http://seaweedfs-all-in-one.sample-a.svc.cluster.local:8333",
-              "pathStyleAccess": true,
-              "stsUnavailable": true
-            }
-          }
-        }'
+        "warehouse-name": "sample_catalog",
+        "storage-credential": {
+          "type": "s3",
+          "credential-type": "access-key",
+          "aws-access-key-id": "lakekeeper-s3-access-key",
+          "aws-secret-access-key": "lakekeeper-s3-secret-access-key"
+        },
+        "storage-profile": {
+          "type": "s3",
+          "bucket": "sample-bucket",
+          "region": "us-east-1",
+          "flavor": "s3-compat",
+          "endpoint": "http://seaweedfs-all-in-one.sample-b.svc.cluster.local:8333",
+          "path-style-access": true,
+          "sts-enabled": false,
+          "remote-signing-enabled": false
+        },
+        "delete-profile": {
+          "type": "hard"
+        }
+      }'
     ```
 
 1. Confirm the created catalog.
 
     ```shell
-    curl -s http://polaris.sample-a.svc.cluster.local:8181/api/management/v1/catalogs \
-      -H "Authorization: Bearer ${POLARIS_ACCESS_TOKEN}"
+    curl -s http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/warehouse \
+      -H "Authorization: Bearer dummy"
     ```
 
-1. Exit the Polaris client pod.
+1. Exit the Lakekeeper client pod.
 
     ```shell
     exit
@@ -203,7 +196,7 @@ In this sample, you will create the following Lakehouse:
 1. Run the DuckDB CLI.
 
     ```shell
-    kubectl exec -it duckdb -n sample-a -- duckdb
+    kubectl exec -it duckdb -n sample-b -- duckdb
     ```
 
 1. Install and load DuckDB extensions.
@@ -222,7 +215,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     CREATE SECRET seaweedfs_secret (
         TYPE s3,
-        ENDPOINT 'seaweedfs-all-in-one.sample-a.svc.cluster.local:8333',
+        ENDPOINT 'seaweedfs-all-in-one.sample-b.svc.cluster.local:8333',
         KEY_ID 'query-engine-s3-access-key',
         SECRET 'query-engine-s3-secret-access-key',
         USE_SSL false,
@@ -231,24 +224,13 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access Polaris.
-
-    ```sql
-    CREATE SECRET polaris_secret (
-        TYPE iceberg,
-        CLIENT_ID 'polaris-root-id',
-        CLIENT_SECRET 'polaris-root-secret',
-        OAUTH2_SERVER_URI 'http://polaris.sample-a.svc.cluster.local:8181/api/catalog/v1/oauth/tokens'
-    );
-    ```
-
-1. Attach the sample catalog in Polaris.
+1. Attach the sample catalog in Lakekeeper.
 
     ```sql
     ATTACH 'sample_catalog' AS sample_catalog (
         TYPE iceberg,
-        ENDPOINT 'http://polaris.sample-a.svc.cluster.local:8181/api/catalog',
-        SECRET 'polaris_secret',
+        ENDPOINT 'http://lakekeeper.sample-b.svc.cluster.local:8181/catalog',
+        AUTHORIZATION_TYPE 'none',
         ACCESS_DELEGATION_MODE 'none'
     );
     ```
@@ -270,7 +252,7 @@ In this sample, you will create the following Lakehouse:
     > - sf=0.1 : 22MB
     > - sf=1 : 240MB
 
-1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register table information to the catalog in Polaris.
+1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register table information to the catalog in Lakekeeper.
 
     ```sql
     CREATE TABLE sample_catalog.tpc_h.orders AS
@@ -309,7 +291,7 @@ In this sample, you will create the following Lakehouse:
 1. Run the DuckDB CLI.
 
     ```shell
-    kubectl exec -it duckdb -n sample-a -- duckdb
+    kubectl exec -it duckdb -n sample-b -- duckdb
     ```
 
 1. Install and load DuckDB extensions.
@@ -328,7 +310,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     CREATE SECRET seaweedfs_secret (
         TYPE s3,
-        ENDPOINT 'seaweedfs-all-in-one.sample-a.svc.cluster.local:8333',
+        ENDPOINT 'seaweedfs-all-in-one.sample-b.svc.cluster.local:8333',
         KEY_ID 'query-engine-s3-access-key',
         SECRET 'query-engine-s3-secret-access-key',
         USE_SSL false,
@@ -337,24 +319,13 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access Polaris.
-
-    ```sql
-    CREATE SECRET polaris_secret (
-        TYPE iceberg,
-        CLIENT_ID 'polaris-root-id',
-        CLIENT_SECRET 'polaris-root-secret',
-        OAUTH2_SERVER_URI 'http://polaris.sample-a.svc.cluster.local:8181/api/catalog/v1/oauth/tokens'
-    );
-    ```
-
-1. Attach the sample catalog in Polaris.
+1. Attach the sample catalog in Lakekeeper.
 
     ```sql
     ATTACH 'sample_catalog' AS sample_catalog (
         TYPE iceberg,
-        ENDPOINT 'http://polaris.sample-a.svc.cluster.local:8181/api/catalog',
-        SECRET 'polaris_secret',
+        ENDPOINT 'http://lakekeeper.sample-b.svc.cluster.local:8181/catalog',
+        AUTHORIZATION_TYPE 'none',
         ACCESS_DELEGATION_MODE 'none'
     );
     ```
@@ -431,7 +402,7 @@ You can also run queries using Spark, which supports Apache Iceberg.
 1. Deploy the ConfigMap and Pod for Spark SQL.
 
     ```shell
-    kubectl apply -f ./spark-sql/spark-sql.yaml -n sample-a
+    kubectl apply -f ./spark-sql/spark-sql.yaml -n sample-b
     ```
 
 ### Run TPC-H queries by using Spark SQL
@@ -439,7 +410,7 @@ You can also run queries using Spark, which supports Apache Iceberg.
 1. Start the Spark SQL CLI in the `spark-sql` pod.
 
     ```shell
-    kubectl exec -it spark-sql -n sample-a -- /opt/spark/bin/spark-sql
+    kubectl exec -it spark-sql -n sample-b -- /opt/spark/bin/spark-sql
     ```
 
 1. Set the default catalog and schema to use the TPC-H tables stored in SeaweedFS.

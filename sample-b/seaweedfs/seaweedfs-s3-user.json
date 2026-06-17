@@ -1,0 +1,32 @@
+{
+  "identities": [
+    {
+      "name": "query-engine-s3-user",
+      "credentials": [
+        {
+          "accessKey": "query-engine-s3-access-key",
+          "secretKey": "query-engine-s3-secret-access-key"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    },
+    {
+      "name": "lakekeeper-s3-user",
+      "credentials": [
+        {
+          "accessKey": "lakekeeper-s3-access-key",
+          "secretKey": "lakekeeper-s3-secret-access-key"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    }
+  ]
+}
