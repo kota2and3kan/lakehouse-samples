@@ -9,16 +9,12 @@ data:
     spark.sql.extensions                                              org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
     spark.sql.catalog.sample_catalog                                  org.apache.iceberg.spark.SparkCatalog
     spark.sql.catalog.sample_catalog.type                             rest
-    spark.sql.catalog.sample_catalog.uri                              http://polaris.sample-a.svc.cluster.local:8181/api/catalog
-    spark.sql.catalog.sample_catalog.prefix                           sample_catalog
+    spark.sql.catalog.sample_catalog.uri                              http://lakekeeper.sample-b.svc.cluster.local:8181/catalog
     spark.sql.catalog.sample_catalog.warehouse                        sample_catalog
-    spark.sql.catalog.sample_catalog.credential                       polaris-root-id:polaris-root-secret
-    spark.sql.catalog.sample_catalog.oauth2-server-uri                http://polaris.sample-a.svc.cluster.local:8181/api/catalog/v1/oauth/tokens
-    spark.sql.catalog.sample_catalog.scope                            PRINCIPAL_ROLE:ALL
-    spark.sql.catalog.sample_catalog.rest.auth.type                   oauth2
+    spark.sql.catalog.sample_catalog.token                            dummy
     spark.sql.catalog.sample_catalog.rest-metrics-reporting-enabled   false
     spark.sql.catalog.sample_catalog.client.region                    us-east-1
-    spark.sql.catalog.sample_catalog.s3.endpoint                      http://seaweedfs-all-in-one.sample-a.svc.cluster.local:8333
+    spark.sql.catalog.sample_catalog.s3.endpoint                      http://seaweedfs-all-in-one.sample-b.svc.cluster.local:8333
     spark.sql.catalog.sample_catalog.s3.path-style-access             true
     spark.sql.catalog.sample_catalog.s3.access-key-id                 query-engine-s3-access-key
     spark.sql.catalog.sample_catalog.s3.secret-access-key             query-engine-s3-secret-access-key

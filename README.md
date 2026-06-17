@@ -12,3 +12,14 @@ Sample A uses:
 - DuckDB and Spark SQL as query engines.
 
 For more details, see [README](./sample-a/README.md) under the `sample-a` directory.
+
+## Sample B
+
+Sample B uses:
+
+- Apache Iceberg as a table format.
+- Apache SeaweedFS as object storage.
+- Lakekeeper as a catalog for Apache Iceberg.
+- DuckDB and Spark SQL as query engines.
+
+For more details, see [README](./sample-b/README.md) under the `sample-b` directory.

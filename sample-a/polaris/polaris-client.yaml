@@ -13,3 +13,4 @@ spec:
         - name: CLIENT_SECRET
           value: "polaris-root-secret"
   terminationGracePeriodSeconds: 0
+  restartPolicy: Never
