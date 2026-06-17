@@ -1,0 +1,32 @@
+{
+  "identities": [
+    {
+      "name": "query-engine-s3-user",
+      "credentials": [
+        {
+          "accessKey": "query-engine-s3-access-key",
+          "secretKey": "query-engine-s3-secret-access-key"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    },
+    {
+      "name": "polaris-s3-user",
+      "credentials": [
+        {
+          "accessKey": "polaris-s3-access-key",
+          "secretKey": "polaris-s3-secret-access-key"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    }
+  ]
+}
