@@ -3,7 +3,7 @@
 Create a Lakehouse on Kubernetes with:
 
 - Apache Iceberg as a table format.
-- Apache SeaweedFS as object storage.
+- SeaweedFS as object storage.
 - Lakekeeper as a catalog for Apache Iceberg.
 - DuckDB and Spark SQL as query engines.
 
@@ -30,7 +30,7 @@ In this sample, you will create the following Lakehouse:
 |  |  | Iceberg Table |  | Iceberg Table |  | Iceberg Table |  |  |
 |  |  +---------------+  +---------------+  +---------------+  |  |
 |  |                                                           |  |
-|  |  Apache SeaweedFS                                         |  |
+|  |  SeaweedFS                                                |  |
 |  |  (Object Storage)                                         |  |
 |  |                                                           |  |
 |  +-----------------------------------------------------------+  |
@@ -48,7 +48,7 @@ In this sample, you will create the following Lakehouse:
     kubectl create ns sample-b
     ```
 
-### Deploy Apache SeaweedFS (Object Storage)
+### Deploy SeaweedFS (Object Storage)
 
 1. Add a Helm repository.
 
