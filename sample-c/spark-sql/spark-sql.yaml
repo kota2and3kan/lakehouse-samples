@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-config
+data:
+  spark-defaults.conf: |
+    spark.jars.ivy                                          /tmp/ivy
+    spark.jars.packages                                     org.apache.iceberg:iceberg-spark-runtime-4.1_2.13:1.11.0,org.apache.hadoop:hadoop-aws:3.4.2,org.slf4j:slf4j-simple:1.7.36
+    spark.sql.extensions                                    org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+    spark.sql.catalog.sample_catalog                        org.apache.iceberg.spark.SparkCatalog
+    spark.sql.catalog.sample_catalog.type                   rest
+    spark.sql.catalog.sample_catalog.uri                    http://seaweedfs-iceberg.sample-c.svc.cluster.local:8181
+    spark.sql.catalog.sample_catalog.credential             seaweedfs-s3-access-key:seaweedfs-s3-secret-access-key
+    spark.sql.catalog.sample_catalog.oauth2-server-uri      http://seaweedfs-iceberg.sample-c.svc.cluster.local:8181/v1/oauth/tokens
+    spark.sql.catalog.sample_catalog.warehouse              s3://warehouse
+    spark.sql.catalog.sample_catalog.io-impl                org.apache.iceberg.aws.s3.S3FileIO
+    spark.sql.catalog.sample_catalog.s3.endpoint            http://seaweedfs-all-in-one.sample-c.svc.cluster.local:8333
+    spark.sql.catalog.sample_catalog.s3.access-key-id       seaweedfs-s3-access-key
+    spark.sql.catalog.sample_catalog.s3.secret-access-key   seaweedfs-s3-secret-access-key
+    spark.sql.catalog.sample_catalog.s3.path-style-access   true
+    spark.sql.catalog.sample_catalog.client.region          us-east-1
+  log4j2.properties: |
+    rootLogger.level = error
+    rootLogger.appenderRef.stdout.ref = console
+    appender.console.type = Console
+    appender.console.name = console
+    appender.console.target = SYSTEM_ERR
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = %d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n%ex
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spark-sql
+spec:
+  containers:
+  - name: spark-sql
+    image: spark:4.1.2
+    command: ["sleep", "inf"]
+    env:
+    - name: SPARK_HOME
+      value: /opt/spark
+    - name: HOME
+      value: /tmp
+    volumeMounts:
+    - name: spark-config
+      mountPath: /opt/spark/conf/spark-defaults.conf
+      subPath: spark-defaults.conf
+    - name: spark-config
+      mountPath: /opt/spark/conf/log4j2.properties
+      subPath: log4j2.properties
+    - name: ivy-cache
+      mountPath: /tmp/ivy
+  volumes:
+  - name: spark-config
+    configMap:
+      name: spark-config
+  - name: ivy-cache
+    emptyDir: {}
+  terminationGracePeriodSeconds: 0
+  restartPolicy: Never
