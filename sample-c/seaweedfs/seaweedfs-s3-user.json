@@ -1,0 +1,18 @@
+{
+  "identities": [
+    {
+      "name": "seaweedfs-s3-user",
+      "credentials": [
+        {
+          "accessKey": "seaweedfs-s3-access-key",
+          "secretKey": "seaweedfs-s3-secret-access-key"
+        }
+      ],
+      "actions": [
+        "Admin",
+        "Read",
+        "Write"
+      ]
+    }
+  ]
+}

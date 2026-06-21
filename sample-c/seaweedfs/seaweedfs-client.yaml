@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: seaweedfs-client
+spec:
+  containers:
+    - name: seaweedfs-client
+      image: curlimages/curl:8.20.0
+      command: ["sleep", "inf"]
+  terminationGracePeriodSeconds: 0
+  restartPolicy: Never
