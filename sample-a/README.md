@@ -72,7 +72,7 @@ In this sample, you will create the following Lakehouse:
     helm install seaweedfs seaweedfs/seaweedfs -f ./seaweedfs/seaweedfs.yaml -n sample-a --version 4.33.0
     ```
 
-1. [Optional] You can access the Web UI (Admin Console) of SeaweedFS through `127.0.0.1` by using the `kubectl port-forward` command.
+1. [Optional] You can access the SeaweedFS Web UI (Admin Console) at `127.0.0.1` using the `kubectl port-forward` command.
 
     ```shell
     kubectl port-forward svc/seaweedfs-admin 23646:23646 -n sample-a
@@ -130,15 +130,6 @@ In this sample, you will create the following Lakehouse:
     ```
 
 ## Create Iceberg Tables (TPC-H)
-
-### Create a bucket in SeaweedFS
-
-1. Create a bucket.
-
-    ```shell
-    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n sample-a) -n sample-a --  \
-      sh -c 'echo "s3.bucket.create -name sample-bucket -owner polaris-s3-user" | weed shell -master=localhost:9333'
-    ```
 
 ### Create a catalog in Polaris
 
@@ -217,7 +208,7 @@ In this sample, you will create the following Lakehouse:
     LOAD iceberg;
     ```
 
-1. Create secrets to access SeaweedFS.
+1. Create a secret to access SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_secret (
@@ -231,7 +222,7 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access Polaris.
+1. Create a secret to access Polaris.
 
     ```sql
     CREATE SECRET polaris_secret (
@@ -265,12 +256,12 @@ In this sample, you will create the following Lakehouse:
     CALL dbgen(sf=0.1);
     ```
 
-    > Note: This command generates TPC-H data in memory, and a large `sf` value might exhaust memory. Be careful when you generate the TPC-H data. For your information, the approximate total file size of Parquet stored in SeaweedFS (not including metadata files) would be as follows (these values were measured in a test environment, but the file sizes may vary in your environment):
+    > Note: This command generates TPC-H data in memory, and a large `sf` value might exhaust memory. Be careful when you generate the TPC-H data. For reference, approximate total size of Parquet files stored in SeaweedFS (not including metadata files) is as follows (these values were measured in a test environment, and may vary in your environment):
     > - sf=0.01 : 2MB
     > - sf=0.1 : 22MB
     > - sf=1 : 240MB
 
-1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register table information to the catalog in Polaris.
+1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register the table metadata in the catalog in Polaris.
 
     ```sql
     CREATE TABLE sample_catalog.tpc_h.orders AS
@@ -323,7 +314,7 @@ In this sample, you will create the following Lakehouse:
     LOAD iceberg;
     ```
 
-1. Create secrets to access SeaweedFS.
+1. Create a secret to access SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_secret (
@@ -337,7 +328,7 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access Polaris.
+1. Create a secret to access Polaris.
 
     ```sql
     CREATE SECRET polaris_secret (
@@ -363,6 +354,12 @@ In this sample, you will create the following Lakehouse:
 
     ```sql
     USE sample_catalog.tpc_h;
+    ```
+
+1. Check if you can see the Iceberg Tables.
+
+    ```sql
+    SHOW TABLES;
     ```
 
 1. Run a TPC-H query, for example, query 21.
@@ -448,6 +445,12 @@ You can also run queries using Spark, which supports Apache Iceberg.
     USE sample_catalog.tpc_h;
     ```
 
+1. Check if you can see the Iceberg Tables.
+
+    ```sql
+    SHOW TABLES;
+    ```
+
 1. Run a TPC-H query, for example, query 21.
 
     ```sql
@@ -496,3 +499,15 @@ You can also run queries using Spark, which supports Apache Iceberg.
     ```sql
     quit;
     ```
+
+## Delete the sample lakehouse
+
+```shell
+kubectl delete ns sample-a
+```
+```shell
+kubectl delete clusterrole seaweedfs-rw-cr
+```
+```shell
+kubectl delete clusterrolebinding seaweedfs-rw-crb
+```

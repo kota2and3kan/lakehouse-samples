@@ -84,7 +84,7 @@ In this sample, you will create the following Lakehouse:
     kubectl apply -f ./seaweedfs/seaweedfs-client.yaml -n sample-c
     ```
 
-1. [Optional] You can access the Web UI (Admin Console) of SeaweedFS through `127.0.0.1` by using the `kubectl port-forward` command.
+1. [Optional] You can access the SeaweedFS Web UI (Admin Console) at `127.0.0.1` using the `kubectl port-forward` command.
 
     ```shell
     kubectl port-forward svc/seaweedfs-admin 23646:23646 -n sample-c
@@ -157,7 +157,7 @@ In this sample, you will create the following Lakehouse:
     LOAD iceberg;
     ```
 
-1. Create secrets to access the S3 Bucket (data files) in SeaweedFS.
+1. Create a secret to access the S3 Bucket (data files) in SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_s3_secret (
@@ -171,7 +171,7 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access the S3 Tables Bucket (catalog) in SeaweedFS.
+1. Create a secret to access the S3 Tables Bucket (catalog) in SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_catalog_secret (
@@ -206,12 +206,12 @@ In this sample, you will create the following Lakehouse:
     CALL dbgen(sf=0.1);
     ```
 
-    > Note: This command generates TPC-H data in memory, and a large `sf` value might exhaust memory. Be careful when you generate the TPC-H data. For your information, the approximate total file size of Parquet stored in SeaweedFS (not including metadata files) would be as follows (these values were measured in a test environment, but the file sizes may vary in your environment):
+    > Note: This command generates TPC-H data in memory, and a large `sf` value might exhaust memory. Be careful when you generate the TPC-H data. For reference, approximate total size of Parquet files stored in SeaweedFS (not including metadata files) is as follows (these values were measured in a test environment, and may vary in your environment):
     > - sf=0.01 : 2MB
     > - sf=0.1 : 22MB
     > - sf=1 : 240MB
 
-1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register the table information to the catalog in SeaweedFS.
+1. Write TPC-H data as Iceberg Tables from memory to SeaweedFS and register the table metadata in the catalog in SeaweedFS.
 
     ```sql
     CREATE TABLE sample_catalog.tpc_h.orders AS
@@ -264,7 +264,7 @@ In this sample, you will create the following Lakehouse:
     LOAD iceberg;
     ```
 
-1. Create secrets to access the S3 Bucket (data files) in SeaweedFS.
+1. Create a secret to access the S3 Bucket (data files) in SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_s3_secret (
@@ -278,7 +278,7 @@ In this sample, you will create the following Lakehouse:
     );
     ```
 
-1. Create secrets to access the S3 Tables Bucket (catalog) in SeaweedFS.
+1. Create a secret to access the S3 Tables Bucket (catalog) in SeaweedFS.
 
     ```sql
     CREATE SECRET seaweedfs_catalog_secret (
@@ -305,6 +305,12 @@ In this sample, you will create the following Lakehouse:
 
     ```sql
     USE sample_catalog.tpc_h;
+    ```
+
+1. Check if you can see the Iceberg Tables.
+
+    ```sql
+    SHOW TABLES;
     ```
 
 1. Run a TPC-H query, for example, query 21.
@@ -390,6 +396,12 @@ You can also run queries using Spark, which supports Apache Iceberg.
     USE sample_catalog.tpc_h;
     ```
 
+1. Check if you can see the Iceberg Tables.
+
+    ```sql
+    SHOW TABLES;
+    ```
+
 1. Run a TPC-H query, for example, query 21.
 
     ```sql
@@ -438,3 +450,15 @@ You can also run queries using Spark, which supports Apache Iceberg.
     ```sql
     quit;
     ```
+
+## Delete the sample lakehouse
+
+```shell
+kubectl delete ns sample-c
+```
+```shell
+kubectl delete clusterrole seaweedfs-rw-cr
+```
+```shell
+kubectl delete clusterrolebinding seaweedfs-rw-crb
+```
