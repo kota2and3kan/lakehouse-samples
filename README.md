@@ -34,3 +34,14 @@ Sample C uses:
 - DuckDB and Spark SQL as query engines.
 
 For more details, see [README](./sample-c/README.md) under the `sample-c` directory.
+
+## Sample D
+
+Sample D uses:
+
+- DuckLake as a lakehouse format.
+- SeaweedFS as object storage.
+- PostgreSQL as a catalog database for DuckLake.
+- DuckDB as a query engine.
+
+For more details, see [README](./sample-d/README.md) under the `sample-d` directory.
