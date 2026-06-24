@@ -189,6 +189,15 @@ In this sample, you will create the following Lakehouse:
     exit
     ```
 
+### Create a bucket in SeaweedFS
+
+1. Create a bucket.
+
+    ```shell
+    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n sample-a) -n sample-a --  \
+      sh -c 'echo "s3.bucket.create -name sample-bucket -owner query-engine-s3-user" | weed shell -master=localhost:9333'
+    ```
+
 ### Load TPC-H data by using DuckDB
 
 1. Run the DuckDB CLI.

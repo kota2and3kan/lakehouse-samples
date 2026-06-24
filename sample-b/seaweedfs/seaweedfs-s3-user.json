@@ -9,7 +9,6 @@
         }
       ],
       "actions": [
-        "Admin",
         "Read",
         "Write"
       ]
@@ -23,9 +22,9 @@
         }
       ],
       "actions": [
-        "Admin",
         "Read",
-        "Write"
+        "Write",
+        "List"
       ]
     }
   ]
