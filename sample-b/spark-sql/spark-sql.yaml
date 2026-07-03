@@ -55,6 +55,7 @@ spec:
     configMap:
       name: spark-config
   - name: ivy-cache
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: ivy-cache
   terminationGracePeriodSeconds: 0
   restartPolicy: Never

@@ -9,5 +9,12 @@ spec:
       command: ["duckdb"]
       stdin: true
       tty: true
+      volumeMounts:
+        - name: extensions
+          mountPath: /root/.duckdb/extensions
   restartPolicy: Never
   terminationGracePeriodSeconds: 0
+  volumes:
+    - name: extensions
+      persistentVolumeClaim:
+        claimName: extensions
