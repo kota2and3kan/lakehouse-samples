@@ -45,7 +45,7 @@ In this sample, you will create the following Lakehouse:
 1. Create a Kubernetes namespace.
 
     ```shell
-    kubectl create ns sample-b
+    kubectl create ns ochacafe
     ```
 
 ### Deploy SeaweedFS (Object Storage)
@@ -63,19 +63,19 @@ In this sample, you will create the following Lakehouse:
 1. Create a secret that includes SeaweedFS user information.
 
     ```shell
-    kubectl create secret generic seaweedfs-s3-user --from-file=seaweedfs_s3_config=./seaweedfs/seaweedfs-s3-user.json -n sample-b
+    kubectl create secret generic seaweedfs-s3-user --from-file=seaweedfs_s3_config=./seaweedfs/seaweedfs-s3-user.json -n ochacafe
     ```
 
 1. Deploy SeaweedFS.
 
     ```shell
-    helm install seaweedfs seaweedfs/seaweedfs -f ./seaweedfs/seaweedfs.yaml -n sample-b --version 4.33.0
+    helm install seaweedfs seaweedfs/seaweedfs -f ./seaweedfs/seaweedfs.yaml -n ochacafe --version 4.33.0
     ```
 
 1. [Optional] You can access the SeaweedFS Web UI (Admin Console) at `127.0.0.1` using the `kubectl port-forward` command.
 
     ```shell
-    kubectl port-forward svc/seaweedfs-admin 23646:23646 -n sample-b
+    kubectl port-forward svc/seaweedfs-admin 23646:23646 -n ochacafe
     ```
 
     > Note: The values of `username` / `password` are `admin` / `admin`.
@@ -95,19 +95,19 @@ In this sample, you will create the following Lakehouse:
 1. Deploy Lakekeeper.
 
     ```shell
-    helm install lakekeeper lakekeeper/lakekeeper -f ./lakekeeper/lakekeeper.yaml -n sample-b --version 0.11.0
+    helm install lakekeeper lakekeeper/lakekeeper -f ./lakekeeper/lakekeeper.yaml -n ochacafe --version 0.11.0
     ```
 
 1. Deploy a client pod for Lakekeeper.
 
     ```shell
-    kubectl apply -f ./lakekeeper/lakekeeper-client.yaml -n sample-b
+    kubectl apply -f ./lakekeeper/lakekeeper-client.yaml -n ochacafe
     ```
 
 1. [Optional] You can access the Lakekeeper Web UI (Admin Console) at `127.0.0.1` using the `kubectl port-forward` command.
 
     ```shell
-    kubectl port-forward svc/lakekeeper 8181:8181 -n sample-b
+    kubectl port-forward svc/lakekeeper 8181:8181 -n ochacafe
     ```
 
     > Note: In this sample, there is no authentication to access Lakekeeper.
@@ -117,7 +117,7 @@ In this sample, you will create the following Lakehouse:
 1. Deploy DuckDB CLI as a pod.
 
     ```shell
-    kubectl apply -f ./duckdb/duckdb.yaml -n sample-b
+    kubectl apply -f ./duckdb/duckdb.yaml -n ochacafe
     ```
 
 ## Create Iceberg Tables (TPC-H)
@@ -127,7 +127,7 @@ In this sample, you will create the following Lakehouse:
 1. Create a bucket.
 
     ```shell
-    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n sample-b) -n sample-b --  \
+    kubectl exec -it $(kubectl get pod -l app.kubernetes.io/component=seaweedfs-all-in-one -o name -n ochacafe) -n ochacafe --  \
       sh -c 'echo "s3.bucket.create -name sample-bucket -owner query-engine-s3-user" | weed shell -master=localhost:9333'
     ```
 
@@ -136,13 +136,13 @@ In this sample, you will create the following Lakehouse:
 1. Run a shell in the Lakekeeper client pod.
 
     ```shell
-    kubectl exec -it lakekeeper-client -n sample-b -- /bin/sh
+    kubectl exec -it lakekeeper-client -n ochacafe -- /bin/sh
     ```
 
 1. Bootstrap Lakekeeper.
 
     ```shell
-    curl -X POST http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/bootstrap \
+    curl -X POST http://lakekeeper.ochacafe.svc.cluster.local:8181/management/v1/bootstrap \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer dummy" \
       -d '{"accept-terms-of-use": true}'
@@ -151,7 +151,7 @@ In this sample, you will create the following Lakehouse:
 1. Create a catalog.
 
     ```shell
-    curl -X POST http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/warehouse \
+    curl -X POST http://lakekeeper.ochacafe.svc.cluster.local:8181/management/v1/warehouse \
       -H "Content-Type: application/json" \
       -H "Authorization: Bearer dummy" \
       -d '{
@@ -167,7 +167,7 @@ In this sample, you will create the following Lakehouse:
           "bucket": "sample-bucket",
           "region": "us-east-1",
           "flavor": "s3-compat",
-          "endpoint": "http://seaweedfs-all-in-one.sample-b.svc.cluster.local:8333",
+          "endpoint": "http://seaweedfs-all-in-one.ochacafe.svc.cluster.local:8333",
           "path-style-access": true,
           "sts-enabled": false,
           "remote-signing-enabled": false
@@ -181,7 +181,7 @@ In this sample, you will create the following Lakehouse:
 1. Confirm the created catalog.
 
     ```shell
-    curl -s http://lakekeeper.sample-b.svc.cluster.local:8181/management/v1/warehouse \
+    curl -s http://lakekeeper.ochacafe.svc.cluster.local:8181/management/v1/warehouse \
       -H "Authorization: Bearer dummy"
     ```
 
@@ -196,7 +196,7 @@ In this sample, you will create the following Lakehouse:
 1. Run the DuckDB CLI.
 
     ```shell
-    kubectl exec -it duckdb -n sample-b -- duckdb
+    kubectl exec -it duckdb -n ochacafe -- duckdb
     ```
 
 1. Install and load DuckDB extensions.
@@ -215,7 +215,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     CREATE SECRET seaweedfs_secret (
         TYPE s3,
-        ENDPOINT 'seaweedfs-all-in-one.sample-b.svc.cluster.local:8333',
+        ENDPOINT 'seaweedfs-all-in-one.ochacafe.svc.cluster.local:8333',
         KEY_ID 'query-engine-s3-access-key',
         SECRET 'query-engine-s3-secret-access-key',
         USE_SSL false,
@@ -229,7 +229,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     ATTACH 'sample_catalog' AS sample_catalog (
         TYPE iceberg,
-        ENDPOINT 'http://lakekeeper.sample-b.svc.cluster.local:8181/catalog',
+        ENDPOINT 'http://lakekeeper.ochacafe.svc.cluster.local:8181/catalog',
         AUTHORIZATION_TYPE 'none',
         ACCESS_DELEGATION_MODE 'none'
     );
@@ -291,7 +291,7 @@ In this sample, you will create the following Lakehouse:
 1. Run the DuckDB CLI.
 
     ```shell
-    kubectl exec -it duckdb -n sample-b -- duckdb
+    kubectl exec -it duckdb -n ochacafe -- duckdb
     ```
 
 1. Install and load DuckDB extensions.
@@ -310,7 +310,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     CREATE SECRET seaweedfs_secret (
         TYPE s3,
-        ENDPOINT 'seaweedfs-all-in-one.sample-b.svc.cluster.local:8333',
+        ENDPOINT 'seaweedfs-all-in-one.ochacafe.svc.cluster.local:8333',
         KEY_ID 'query-engine-s3-access-key',
         SECRET 'query-engine-s3-secret-access-key',
         USE_SSL false,
@@ -324,7 +324,7 @@ In this sample, you will create the following Lakehouse:
     ```sql
     ATTACH 'sample_catalog' AS sample_catalog (
         TYPE iceberg,
-        ENDPOINT 'http://lakekeeper.sample-b.svc.cluster.local:8181/catalog',
+        ENDPOINT 'http://lakekeeper.ochacafe.svc.cluster.local:8181/catalog',
         AUTHORIZATION_TYPE 'none',
         ACCESS_DELEGATION_MODE 'none'
     );
@@ -408,7 +408,7 @@ You can also run queries using Spark, which supports Apache Iceberg.
 1. Deploy the ConfigMap and Pod for Spark SQL.
 
     ```shell
-    kubectl apply -f ./spark-sql/spark-sql.yaml -n sample-b
+    kubectl apply -f ./spark-sql/spark-sql.yaml -n ochacafe
     ```
 
 ### Run TPC-H queries by using Spark SQL
@@ -416,7 +416,7 @@ You can also run queries using Spark, which supports Apache Iceberg.
 1. Start the Spark SQL CLI in the `spark-sql` pod.
 
     ```shell
-    kubectl exec -it spark-sql -n sample-b -- /opt/spark/bin/spark-sql
+    kubectl exec -it spark-sql -n ochacafe -- /opt/spark/bin/spark-sql
     ```
 
 1. Set the default catalog and schema to use the TPC-H tables stored in SeaweedFS.
@@ -483,7 +483,7 @@ You can also run queries using Spark, which supports Apache Iceberg.
 ## Delete the sample lakehouse
 
 ```shell
-kubectl delete ns sample-b
+kubectl delete ns ochacafe
 ```
 ```shell
 kubectl delete clusterrole seaweedfs-rw-cr
