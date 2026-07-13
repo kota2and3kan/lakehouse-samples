@@ -15,8 +15,8 @@ In this sample, you will create the following Lakehouse:
 +--[Kubernetes]---------------------------------------------------+
 |                                                                 |
 |  +----------------+                         +----------------+  |
-|  | DuckDB         |----------(SQL)--------->| PostgreSQL     |  |
-|  | (Query Engine) |<---(Get Catalog Info)---| (Catalog DB)   |  |
+|  | DuckDB         |<---------(SQL)--------->| PostgreSQL     |  |
+|  | (Query Engine) |<--(Catalog Operation)-->| (Catalog DB)   |  |
 |  +-------+--------+                         +----------------+  |
 |          |                                                      |
 |  (Read/Write Data and Metadata)                                 |
