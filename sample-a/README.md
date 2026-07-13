@@ -15,8 +15,8 @@ In this sample, you will create the following Lakehouse:
 +--[Kubernetes]---------------------------------------------------+
 |                                                                 |
 |  +----------------+                         +----------------+  |
-|  | DuckDB         |---(Iceberg REST API)--->| Apache Polaris |  |
-|  | (Query Engine) |<---(Get Catalog Info)---| (REST Catalog) |  |
+|  | DuckDB         |<--(Iceberg REST API)--->| Apache Polaris |  |
+|  | (Query Engine) |<--(Catalog Operation)-->| (REST Catalog) |  |
 |  +-------+--------+                         +----------------+  |
 |          |                                                      |
 |  (Read/Write Data and Metadata)                                 |
