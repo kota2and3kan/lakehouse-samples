@@ -8,8 +8,8 @@
 +--[Kubernetes]---------------------------------------------------------------+
 |                                                                             |
 |  +----------------+                                     +----------------+  |
-|  | DuckDB         |---------(Iceberg REST API)--------->| Lakekeeper     |  |
-|  | (Query Engine) |<--------(Get Catalog Info)----------| (REST Catalog) |  |
+|  | DuckDB         |<--------(Iceberg REST API)--------->| Lakekeeper     |  |
+|  | (Query Engine) |<--------(Catalog Operation)-------->| (REST Catalog) |  |
 |  +-------+--------+                                     +----------------+  |
 |          |                                                                  |
 |  (Read/Write Data and Metadata)                                             |
@@ -331,7 +331,7 @@
     +--[Kubernetes]---------------------------------------------------------------+
     |                                                                             |
     |  +----------------+                                     +----------------+  |
-    |  | DuckDB         |   +------(Create a catalog)-------->| Lakekeeper     |  |
+    |  | DuckDB         |   +------(Create Catalog)---------->| Lakekeeper     |  |
     |  | (Query Engine) |   |                                 | (REST Catalog) |  |
     |  +----------------+   |                                 +----------------+  |
     |                       |      +----------------+                             |
@@ -513,7 +513,7 @@
     +--[Kubernetes]---------------------------------------------------------------+
     |                                                                             |
     |  +----------------+                                     +----------------+  |
-    |  | DuckDB         |-----(Register schema metadata)----->| Lakekeeper     |  |
+    |  | DuckDB         |--------(Register Namespace)-------->| Lakekeeper     |  |
     |  | (Query Engine) |                                     | (REST Catalog) |  |
     |  +----------------+                                     +----------------+  |
     |                                                                             |
@@ -611,9 +611,9 @@
     +--[Kubernetes]---------------------------------------------------------------+
     |                                                                             |
     |  +-----------------------------------+                  +----------------+  |
-    |  | DuckDB                            |     Register     | Lakekeeper     |  |
-    |  |  +-------+  +-------+  +-------+  |---   Table   --->| (REST Catalog) |  |
-    |  |  | Table |  | Table |  | Table |  |     Metadata     +----------------+  |
+    |  | DuckDB                            | Register/Commit  | Lakekeeper     |  |
+    |  |  +-------+  +-------+  +-------+  |---- Tables ----->| (REST Catalog) |  |
+    |  |  | Table |  | Table |  | Table |  |                  +----------------+  |
     |  |  +---+---+  +---+---+  +---+---+  |                                      |
     |  +------|----------|----------|------+                                      |
     |         |          |          |                                             |
@@ -715,8 +715,8 @@
     +--[Kubernetes]---------------------------------------------------------------+
     |                                                                             |
     |  +----------------+                                     +----------------+  |
-    |  | DuckDB         |---------(Iceberg REST API)--------->| Lakekeeper     |  |
-    |  | (Query Engine) |<--------(Get Catalog Info)----------| (REST Catalog) |  |
+    |  | DuckDB         |<--------(Iceberg REST API)--------->| Lakekeeper     |  |
+    |  | (Query Engine) |<--------(Catalog Operation)-------->| (REST Catalog) |  |
     |  +-------+--------+                                     +----------------+  |
     |          |                                                                  |
     |    (Read Tables)                                                            |
@@ -866,8 +866,8 @@
     +--[Kubernetes]---------------------------------------------------------------+
     |                                                                             |
     |  +----------------+                                     +----------------+  |
-    |  | Spark SQL      |---------(Iceberg REST API)--------->| Lakekeeper     |  |
-    |  | (Query Engine) |<--------(Get Catalog Info)----------| (REST Catalog) |  |
+    |  | Spark SQL      |<--------(Iceberg REST API)--------->| Lakekeeper     |  |
+    |  | (Query Engine) |<--------(Catalog Operation)-------->| (REST Catalog) |  |
     |  +-------+--------+                                     +----------------+  |
     |          |                                                                  |
     |    (Read Tables)                                                            |
