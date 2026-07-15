@@ -74,6 +74,20 @@
     +-----------------------------------------------------------------------------+
     ```
 
+### Deploy PVCs to store DuckDB extensions and Ivy cache
+
+1. Deploy PVC to store DuckDB extensions.
+
+    ```shell
+    kubectl apply -f ./duckdb/pvc-for-extensions.yaml -n ochacafe
+    ```
+
+1. Deploy PVC to store Ivy cache.
+
+    ```shell
+    kubectl apply -f ./spark-sql/pvc-for-ivy-cache.yaml -n ochacafe
+    ```
+
 ### Deploy SeaweedFS (Object Storage)
 
 1. Create a secret that includes SeaweedFS user information.
